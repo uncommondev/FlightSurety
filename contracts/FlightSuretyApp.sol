@@ -1,10 +1,13 @@
-pragma solidity ^0.4.25;
+pragma solidity ^0.4.24;
 
 // It's important to avoid vulnerabilities due to numeric overflow bugs
 // OpenZeppelin's SafeMath library, when used correctly, protects agains such bugs
 // More info: https://www.nccgroup.trust/us/about-us/newsroom-and-events/blog/2018/november/smart-contract-insecurity-bad-arithmetic/
 
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+
+// Import FlightSuretyData contract
+import "./FlightSuretyData.sol";
 
 /************************************************** */
 /* FlightSurety Smart Contract                      */
@@ -25,6 +28,7 @@ contract FlightSuretyApp {
     uint8 private constant STATUS_CODE_LATE_OTHER = 50;
 
     address private contractOwner;          // Account used to deploy contract
+    FlightSuretyData private flightSuretyData; // Contract used to store flight information
 
     struct Flight {
         bool isRegistered;
@@ -121,7 +125,7 @@ contract FlightSuretyApp {
                                 external
                                 pure
     {
-
+        
     }
     
    /**
@@ -138,6 +142,12 @@ contract FlightSuretyApp {
                                 internal
                                 pure
     {
+        bytes32 flightKey = getFlightKey(airline, flight, timestamp);
+
+        flights[flightKey].statusCode = statusCode;
+        if (statusCode == STATUS_CODE_LATE_AIRLINE) {
+            flightSuretyData.creditInsurees(airline, flight, timestamp);
+        }
     }
 
 
